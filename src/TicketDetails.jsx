@@ -5,9 +5,10 @@ export default function TicketDetails() {
   const [ticketData, setTicketData] = useState(null);
   const [barcode, setBarcode] = useState("");
 
-  let url = "https://ticketguru.hellmanstudios.fi/api/tickets/1";
+  let url = "http://localhost:8080/api/tickets";
+  //"https://ticketguru.hellmanstudios.fi/api/tickets/1";
 
-  const username = "admin";
+  const username = "admin@test.com";
   const password = "admin";
   const authToken = btoa(`${username}:${password}`);
 
@@ -20,13 +21,14 @@ export default function TicketDetails() {
   const handleKeyPress = (event) => {
     if (event.key === "Enter") {
       event.preventDefault();
-      fetchTicketData(url);
+      fetchTicketData({ url, barcode });
+      setBarcode("");
     }
   };
 
-  const fetchTicketData = async (url) => {
+  const fetchTicketData = async ({ url, barcode }) => {
     try {
-      const response = await axios.get(url);
+      const response = await axios.get(url + "/barcode/" + barcode);
       setTicketData(response.data);
     } catch (error) {
       console.error("Error fetching: ", error);
@@ -37,6 +39,7 @@ export default function TicketDetails() {
     <div>
       Barcode:{" "}
       <input
+        autoFocus
         type="text"
         value={barcode}
         onChange={handleChange}
