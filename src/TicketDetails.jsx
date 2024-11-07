@@ -5,7 +5,7 @@ export default function TicketDetails() {
   const [ticketData, setTicketData] = useState(null);
   const [barcode, setBarcode] = useState("");
 
-  let url = "http://localhost:8080/api/tickets";
+  let url = "https://ticketguru.hellmanstudios.fi/api/tickets";
   //"https://ticketguru.hellmanstudios.fi/api/tickets/1";
 
   const username = "admin@test.com";
