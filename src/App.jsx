@@ -1,10 +1,10 @@
 import "./App.css";
-import TicketDetails from "./TicketDetails";
+import TicketScanner from "./TicketScanner";
 
 function App() {
   return (
     <>
-      <TicketDetails />
+      <TicketScanner />
     </>
   );
 }

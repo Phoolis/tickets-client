@@ -1,7 +1,7 @@
 import { useState } from "react";
 import axios from "axios";
 
-export default function TicketDetails() {
+export default function TicketScanner() {
   const [ticketData, setTicketData] = useState(null);
   const [barcode, setBarcode] = useState("");
 
