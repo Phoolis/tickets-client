@@ -1,18 +1,24 @@
 import { useState, useEffect } from "react";
-import { useApiService } from "../service/api";
+import { useApiService } from "../service/ApiProvider";
 
 export default function EventDropDown({ selectedEventId, setSelectedEventId }) {
-  const [events, setEvents] = useState([]);
   const { api, fetchEvents } = useApiService();
+  const [events, setEvents] = useState([]);
 
   useEffect(() => {
+    const getEvents = async () => {
+      if (!api) return; // Only fetch if `api` is set
+      try {
+        console.log("Fetching events for API:", api); // Log API changes
+        const fetchedEvents = await fetchEvents();
+        console.log("Fetched events:", fetchedEvents); // Log fetched events
+        setEvents(fetchedEvents);
+      } catch (error) {
+        console.error("Error fetching events:", error);
+      }
+    };
     getEvents();
-  }, [api]);
-
-  const getEvents = async () => {
-    const response = await fetchEvents();
-    setEvents(response);
-  };
+  }, [api]); // Fetch events whenever `api` changes
 
   const handleChange = (e) => {
     setSelectedEventId(e.target.value);

@@ -1,5 +1,6 @@
 import "./App.css";
 import AppContext from "./AppContext";
+import { ApiProvider } from "./service/ApiProvider";
 import TicketScanner from "./TicketScanner";
 
 const settings = {
@@ -31,7 +32,9 @@ const settings = {
 function App() {
   return (
     <AppContext.Provider value={{ settings }}>
-      <TicketScanner />
+      <ApiProvider>
+        <TicketScanner />
+      </ApiProvider>
     </AppContext.Provider>
   );
 }
