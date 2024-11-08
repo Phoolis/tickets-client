@@ -10,40 +10,56 @@ export default function TicketScanner() {
   const [example, setExample] = useState(null);
   const [error, setError] = useState(null);
   const [barcode, setBarcode] = useState("");
+  const [api, setApi] = useState("their");
 
-  const LOCAL_API = "http://localhost:8080";
-  const OUR_API = "https://ticketguru.hellmanstudios.fi";
-  const THEIR_API =
-    "https://ticket-guru-ticketguru-scrum-ritarit.2.rahtiapp.fi";
-
-  /**
-   * Change the following properties to test the correct API
-   *
-   * URL: The URL of the API to test
-   * TICKET_USED_ERROR_CODE: The error code for a used ticket
-   *
-   * OPTIONS: LOCAL_API, OUR_API, THEIR_API
-   *
-   * NOTE: Make sure you run 127.0.0.1:5500 in your browser to test the Scrum Ritarit API
-   */
-  const URL = OUR_API;
-  const TICKET_USED_ERROR_CODE = "ERR_BAD_REQUEST"; // Ours: "ERR_BAD_REQUEST", Theirs: nothing (yet?)
-  /**
-   * END OF CHANGEABLE PROPERTIES
-   */
-
-  const BARCODE_PROPERTY = URL === THEIR_API ? "ticketNumber" : "barcode";
-
-  const username = URL === THEIR_API ? "client" : "jane.doe@ticketguru.com";
-  const password = URL === THEIR_API ? "client_salasana" : "TicketInspector123";
-  const authToken = btoa(`${username}:${password}`);
-
-  // add basic auth header to all axios requests
-  axios.defaults.headers.common["Authorization"] = `Basic ${authToken}`;
+  const settings = {
+    local: {
+      url: "http://localhost:8080",
+      ticketUsedErrorCode: "ERR_BAD_REQUEST",
+      barcodeProperty: "barcode",
+      username: "admin@test.com",
+      password: "admin",
+    },
+    our: {
+      url: "https://ticketguru.hellmanstudios.fi",
+      ticketUsedErrorCode: "ERR_BAD_REQUEST",
+      barcodeProperty: "barcode",
+      username: "jane.doe@ticketguru.com",
+      password: "TicketInspector123",
+    },
+    their: {
+      url: "https://ticket-guru-ticketguru-scrum-ritarit.2.rahtiapp.fi",
+      ticketUsedErrorCode: "NOT_IMPLEMENTED",
+      barcodeProperty: "ticketNumber",
+      username: "client",
+      password: "client_salasana",
+    },
+  };
 
   useEffect(() => {
-    fetchExampleTicket();
-  }, []);
+    if (api) {
+      setAuthHeader();
+      fetchExampleTicket();
+    }
+  }, [api]);
+
+  const setAuthHeader = () => {
+    const authToken = btoa(
+      `${settings[api].username}:${settings[api].password}`
+    );
+    axios.defaults.headers.common["Authorization"] = `Basic ${authToken}`;
+  };
+
+  const changeApi = async (newApi) => {
+    try {
+      setBarcode("");
+      setTicketData(null);
+      setApi(newApi); // This triggers the useEffect hook.
+    } catch (error) {
+      console.error("Error changing API:", error);
+      setError({ message: "Error changing API or setting headers" });
+    }
+  };
 
   const handleChange = (event) => {
     setBarcode(event.target.value);
@@ -58,11 +74,13 @@ export default function TicketScanner() {
   };
 
   const fetchExampleTicket = async () => {
+    setError(null);
     try {
-      const response = await axios.get(URL + "/api/tickets");
+      const response = await axios.get(settings[api].url + "/api/tickets");
       setExample(response.data[0]);
     } catch (error) {
-      console.error("Error fetching ticket data: ", error);
+      console.error("Error fetching example ticket data: ", error);
+      setError({ message: "Network error. Is the server up?" });
     }
   };
 
@@ -70,12 +88,12 @@ export default function TicketScanner() {
     setError(null);
     try {
       const fetchUrl =
-        URL +
-        (URL == THEIR_API ? "/api/tickets/" : "/api/tickets/barcode/") +
+        settings[api].url +
+        (api == "their" ? "/api/tickets/" : "/api/tickets/barcode/") +
         barcode;
       const response = await axios.get(fetchUrl);
       setTicketData(response.data);
-      const fetchMoreFn = URL === THEIR_API ? fetchMoreTheirs : fetchMoreOurs;
+      const fetchMoreFn = api == "their" ? fetchMoreTheirs : fetchMoreOurs;
       fetchMoreFn(response.data);
       setBarcode("");
     } catch (error) {
@@ -100,10 +118,10 @@ export default function TicketScanner() {
     }
     try {
       const eventResponse = await axios.get(
-        URL + "/api/events/" + ticketData["eventId"]
+        settings[api].url + "/api/events/" + ticketData["eventId"]
       );
       const ticketTypeResponse = await axios.get(
-        URL + "/api/ticket-types/" + ticketData["ticketTypeId"]
+        settings[api].url + "/api/ticket-types/" + ticketData["ticketTypeId"]
       );
       setAdditionalData({
         event: {
@@ -120,16 +138,16 @@ export default function TicketScanner() {
 
   const markTicketAsUsed = async (barcode) => {
     // Scrum Ritarit have not implemented an error for a used ticket yet, so the following is a workaround
-    if (URL === THEIR_API && ticketData["usedTimestamp"]) {
-      setError({ code: TICKET_USED_ERROR_CODE });
+    if (api == "their" && ticketData["usedTimestamp"]) {
+      setError({ code: settings[api].ticketUsedErrorCode });
       return;
     }
 
     try {
       const useUrl =
-        URL +
+        settings[api].url +
         "/api/tickets/" +
-        (URL == THEIR_API ? barcode + "/use?used=true" : "use/" + barcode);
+        (api == "their" ? barcode + "/use?used=true" : "use/" + barcode);
       const response = await axios.put(useUrl);
       setTicketData(response.data);
       setBarcode("");
@@ -141,14 +159,22 @@ export default function TicketScanner() {
 
   return (
     <div>
-      Barcode:{" "}
-      <input
-        autoFocus
-        type="text"
-        value={barcode}
-        onChange={handleChange}
-        onKeyDown={handleKeyPress}
-      />
+      <h5>Choose API server:</h5>
+      <div className="testButtonsRow">
+        <button onClick={() => changeApi("local")}>Local API</button>
+        <button onClick={() => changeApi("our")}>NAT20 API</button>
+        <button onClick={() => changeApi("their")}>Scrum Ritarit API</button>
+      </div>
+      <div className="barcodeReader">
+        Barcode:{" "}
+        <input
+          autoFocus
+          type="text"
+          value={barcode}
+          onChange={handleChange}
+          onKeyDown={handleKeyPress}
+        />
+      </div>
       {ticketData && (
         <>
           <div>
@@ -158,18 +184,27 @@ export default function TicketScanner() {
             <p>{JSON.stringify(additionalData)}</p>
           </div>
           <button
-            onClick={() => markTicketAsUsed(ticketData[BARCODE_PROPERTY])}
+            onClick={() =>
+              markTicketAsUsed(ticketData[settings[api].barcodeProperty])
+            }
           >
             Mark as Used
           </button>
         </>
       )}
+
       <div className="error">
-        {error && error.code == TICKET_USED_ERROR_CODE && (
+        {error && (
+          <p>Error: {error.message || "An unexpected error occurred."}</p>
+        )}
+        {error && error.code === settings[api].ticketUsedErrorCode && (
           <p>Ticket already used!</p>
         )}
       </div>
-      <div>{example && <p> Try this: {example[BARCODE_PROPERTY]}</p>}</div>
+
+      <div>
+        {example && <p> Try this: {example[settings[api].barcodeProperty]}</p>}
+      </div>
     </div>
   );
 }
