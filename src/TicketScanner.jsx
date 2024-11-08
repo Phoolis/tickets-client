@@ -161,9 +161,15 @@ export default function TicketScanner() {
     <div>
       <h5>Choose API server:</h5>
       <div className="testButtonsRow">
-        <button onClick={() => changeApi("local")}>Local API</button>
-        <button onClick={() => changeApi("our")}>NAT20 API</button>
-        <button onClick={() => changeApi("their")}>Scrum Ritarit API</button>
+        <button disabled={api == "local"} onClick={() => changeApi("local")}>
+          Local API
+        </button>
+        <button disabled={api == "our"} onClick={() => changeApi("our")}>
+          NAT20 API
+        </button>
+        <button disabled={api == "their"} onClick={() => changeApi("their")}>
+          Scrum Ritarit API
+        </button>
       </div>
       <div className="barcodeReader">
         Barcode:{" "}
