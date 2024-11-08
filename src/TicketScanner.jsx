@@ -7,12 +7,23 @@ export default function TicketScanner() {
   const [error, setError] = useState(null);
   const [barcode, setBarcode] = useState("");
 
-  const url = "https://ticketguru.hellmanstudios.fi/api/tickets";
+  const OUR_API = "https://ticketguru.hellmanstudios.fi/api/tickets";
+  const THEIR_API =
+    "https://ticket-guru-ticketguru-scrum-ritarit.2.rahtiapp.fi/api/tickets";
 
+  /**
+   * Change the following 3 properties and uncomment the correct username and password to test the correct API
+   */
+  const URL = THEIR_API; // change to THEIR_API to test the API of Scrum Ritarit
+  const BARCODE_PROPERTY = "ticketNumber"; // Ours: "barcode", Theirs: "ticketNumber"
+  const TICKET_USED_ERROR_CODE = "ERR_BAD_REQUEST"; // Ours: "ERR_BAD_REQUEST", Theirs: nothing (yet?)
+
+  const username = "client";
+  const password = "client_salasana";
   //const username = "admin@test.com";
   //const password = "admin";
-  const username = "jane.doe@ticketguru.com";
-  const password = "TicketInspector123";
+  //const username = "jane.doe@ticketguru.com";
+  //const password = "TicketInspector123";
   const authToken = btoa(`${username}:${password}`);
 
   // add basic auth header to all axios requests
@@ -36,7 +47,7 @@ export default function TicketScanner() {
 
   const fetchExampleTicket = async () => {
     try {
-      const response = await axios.get(url);
+      const response = await axios.get(URL);
       setExample(response.data[0]);
     } catch (error) {
       console.error("Error fetching ticket data: ", error);
@@ -44,17 +55,30 @@ export default function TicketScanner() {
   };
 
   const fetchTicketData = async (barcode) => {
+    setError(null);
     try {
-      const response = await axios.get(url + "/barcode/" + barcode);
+      const fetchUrl = URL + (URL == THEIR_API ? "/" : "/barcode/") + barcode;
+      const response = await axios.get(fetchUrl);
       setTicketData(response.data);
+      setBarcode("");
     } catch (error) {
       console.error("Error fetching ticket data: ", error);
     }
   };
 
   const markTicketAsUsed = async (barcode) => {
+    // Scrum Ritarit have not implemented an error for a used ticket yet, so the following is a workaround
+    if (URL === THEIR_API && ticketData["usedTimestamp"]) {
+      setError({ code: TICKET_USED_ERROR_CODE });
+      return;
+    }
+
     try {
-      const response = await axios.put(url + "/use/" + barcode);
+      const useUrl =
+        URL +
+        "/" +
+        (URL == THEIR_API ? barcode + "/use?used=true" : "use/" + barcode);
+      const response = await axios.put(useUrl);
       setTicketData(response.data);
       setBarcode("");
     } catch (error) {
@@ -78,18 +102,19 @@ export default function TicketScanner() {
           <div>
             <p>{JSON.stringify(ticketData)}</p>
           </div>
-          <button onClick={() => markTicketAsUsed(barcode)}>
+          <button
+            onClick={() => markTicketAsUsed(ticketData[BARCODE_PROPERTY])}
+          >
             Mark as Used
           </button>
         </>
       )}
       <div className="error">
-        {error &&
-          error.code == "ERR_BAD_REQUEST" && ( // This would be better if it received the CONFLICT status code
-            <p>Ticket already used!</p>
-          )}
+        {error && error.code == TICKET_USED_ERROR_CODE && (
+          <p>Ticket already used!</p>
+        )}
       </div>
-      <div>{example && <p> Try this: {example.barcode}</p>}</div>
+      <div>{example && <p> Try this: {example[BARCODE_PROPERTY]}</p>}</div>
     </div>
   );
 }
