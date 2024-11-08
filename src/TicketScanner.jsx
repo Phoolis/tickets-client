@@ -4,6 +4,7 @@ import { useAppContext } from "./AppContext";
 
 import EventDropDown from "./components/EventDropDown";
 import Ticket from "./components/Ticket";
+import CorrectEventChecker from "./components/CorrectEventChecker";
 
 export default function TicketScanner() {
   const { settings } = useAppContext();
@@ -20,6 +21,7 @@ export default function TicketScanner() {
     useTicket,
   } = useApiService();
   const [selectedEventId, setSelectedEventId] = useState(0);
+  const [eventIdInTicket, setEventIdInTicket] = useState(0);
   const [ticketData, setTicketData] = useState(null);
   const [additionalData, setAdditionalData] = useState({
     event: null,
@@ -34,6 +36,12 @@ export default function TicketScanner() {
         .catch((error) => setError({ message: error.message }));
     }
   }, [api]);
+
+  useEffect(() => {
+    if (ticketData != null) {
+      setEventIdInTicket(ticketData.eventId);
+    }
+  }, [ticketData]);
 
   const changeApi = async (newApi) => {
     try {
@@ -141,6 +149,10 @@ export default function TicketScanner() {
         setSelectedEventId={setSelectedEventId}
         settings={settings}
         api={api}
+      />
+      <CorrectEventChecker
+        selectedEventId={selectedEventId}
+        eventIdInTicket={eventIdInTicket}
       />
       <div className="barcodeReader">
         Barcode:{" "}

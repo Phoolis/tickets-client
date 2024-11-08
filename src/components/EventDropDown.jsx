@@ -23,6 +23,7 @@ export default function EventDropDown({ selectedEventId, setSelectedEventId }) {
   return (
     <div>
       <select id='eventSelect' value={selectedEventId} onChange={handleChange}>
+        <option></option>
         {events.map((event) => (
           <option key={event.eventId} value={event.eventId}>
             {event.eventName}
