@@ -18,11 +18,21 @@ export default function TicketScanner() {
 
   /**
    * Change the following properties to test the correct API
+   *
+   * URL: The URL of the API to test
+   * TICKET_USED_ERROR_CODE: The error code for a used ticket
+   *
+   * OPTIONS: LOCAL_API, OUR_API, THEIR_API
+   *
+   * NOTE: Make sure you run 127.0.0.1:5500 in your browser to test the Scrum Ritarit API
    */
-  const URL = OUR_API; // change to THEIR_API to test the API of Scrum Ritarit
+  const URL = OUR_API;
   const TICKET_USED_ERROR_CODE = "ERR_BAD_REQUEST"; // Ours: "ERR_BAD_REQUEST", Theirs: nothing (yet?)
+  /**
+   * END OF CHANGEABLE PROPERTIES
+   */
 
-  const BARCODE_PROPERTY = URL === THEIR_API ? "ticketNumber" : "barcode"; // Ours: "barcode", Theirs: "ticketNumber"
+  const BARCODE_PROPERTY = URL === THEIR_API ? "ticketNumber" : "barcode";
 
   const username = URL === THEIR_API ? "client" : "jane.doe@ticketguru.com";
   const password = URL === THEIR_API ? "client_salasana" : "TicketInspector123";
