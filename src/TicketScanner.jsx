@@ -13,6 +13,7 @@ export default function TicketScanner() {
   const [error, setError] = useState(null);
   const [barcode, setBarcode] = useState("");
   const [api, setApi] = useState("their");
+  const [selectedEventId, setSelectedEventId] = useState(0);
 
   const settings = {
     local: {
@@ -162,7 +163,7 @@ export default function TicketScanner() {
   return (
     <div>
       <h5>Choose API server:</h5>
-      <div className="testButtonsRow">
+      <div className='testButtonsRow'>
         <button disabled={api == "local"} onClick={() => changeApi("local")}>
           Local API
         </button>
@@ -173,11 +174,15 @@ export default function TicketScanner() {
           Scrum Ritarit API
         </button>
       </div>
-      <div className="barcodeReader">
+      <EventDropDown
+        selectedEventId={selectedEventId}
+        setSelectedEventId={setSelectedEventId}
+      />
+      <div className='barcodeReader'>
         Barcode:{" "}
         <input
           autoFocus
-          type="text"
+          type='text'
           value={barcode}
           onChange={handleChange}
           onKeyDown={handleKeyPress}
@@ -194,14 +199,13 @@ export default function TicketScanner() {
           <button
             onClick={() =>
               markTicketAsUsed(ticketData[settings[api].barcodeProperty])
-            }
-          >
+            }>
             Mark as Used
           </button>
         </>
       )}
 
-      <div className="error">
+      <div className='error'>
         {error && (
           <p>Error: {error.message || "An unexpected error occurred."}</p>
         )}
