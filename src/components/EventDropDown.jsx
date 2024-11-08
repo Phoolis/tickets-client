@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { useAppContext } from "./AppContext";
-import { useApiService } from "./service/api";
+import { useAppContext } from "../AppContext";
+import { useApiService } from "../service/api";
 
 export default function EventDropDown({ selectedEventId, setSelectedEventId }) {
   const [events, setEvents] = useState([]);
@@ -22,7 +22,7 @@ export default function EventDropDown({ selectedEventId, setSelectedEventId }) {
 
   return (
     <div>
-      <select id="eventSelect" value={selectedEventId} onChange={handleChange}>
+      <select id='eventSelect' value={selectedEventId} onChange={handleChange}>
         {events.map((event) => (
           <option key={event.eventId} value={event.eventId}>
             {event.eventName}
