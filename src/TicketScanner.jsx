@@ -1,11 +1,14 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 
+import EventDropDown from "./eventDropDown";
+
 export default function TicketScanner() {
   const [ticketData, setTicketData] = useState(null);
   const [example, setExample] = useState(null);
   const [error, setError] = useState(null);
   const [barcode, setBarcode] = useState("");
+  const [selectedEventId, setSelectedEventId] = useState(0);
 
   const OUR_API = "https://ticketguru.hellmanstudios.fi/api/tickets";
   const THEIR_API =
@@ -89,10 +92,14 @@ export default function TicketScanner() {
 
   return (
     <div>
+      <EventDropDown
+        selectedEventId={selectedEventId}
+        setSelectedEventId={setSelectedEventId}
+      />
       Barcode:{" "}
       <input
         autoFocus
-        type="text"
+        type='text'
         value={barcode}
         onChange={handleChange}
         onKeyDown={handleKeyPress}
@@ -103,13 +110,12 @@ export default function TicketScanner() {
             <p>{JSON.stringify(ticketData)}</p>
           </div>
           <button
-            onClick={() => markTicketAsUsed(ticketData[BARCODE_PROPERTY])}
-          >
+            onClick={() => markTicketAsUsed(ticketData[BARCODE_PROPERTY])}>
             Mark as Used
           </button>
         </>
       )}
-      <div className="error">
+      <div className='error'>
         {error && error.code == TICKET_USED_ERROR_CODE && (
           <p>Ticket already used!</p>
         )}
