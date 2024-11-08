@@ -1,13 +1,3 @@
-.error {
-  color: tomato;
-}
-
-.testButtonsRow {
-  display: flex;
-  justify-content: center;
-  margin: 20px;
-}
-
-.testButtonsRow button {
-  margin: 0 10px;
-}
+@tailwind base;
+@tailwind components;
+@tailwind utilities;

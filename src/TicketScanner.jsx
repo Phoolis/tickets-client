@@ -3,6 +3,7 @@ import { useApiService } from "./service/api";
 import { useAppContext } from "./AppContext";
 
 import EventDropDown from "./components/EventDropDown";
+import Ticket from "./components/Ticket";
 
 export default function TicketScanner() {
   const { settings } = useAppContext();
@@ -124,7 +125,7 @@ export default function TicketScanner() {
   return (
     <div>
       <h5>Choose API server:</h5>
-      <div className='testButtonsRow'>
+      <div className="testButtonsRow">
         <button disabled={api == "local"} onClick={() => changeApi("local")}>
           Local API
         </button>
@@ -141,11 +142,11 @@ export default function TicketScanner() {
         settings={settings}
         api={api}
       />
-      <div className='barcodeReader'>
+      <div className="barcodeReader">
         Barcode:{" "}
         <input
           autoFocus
-          type='text'
+          type="text"
           value={barcode}
           onChange={handleChange}
           onKeyDown={handleKeyPress}
@@ -153,22 +154,18 @@ export default function TicketScanner() {
       </div>
       {ticketData && (
         <>
-          <div>
-            <p>{JSON.stringify(ticketData)}</p>
-          </div>
-          <div>
-            <p>{JSON.stringify(additionalData)}</p>
-          </div>
+          <Ticket ticketData={ticketData} additionalData={additionalData} />
           <button
             onClick={() =>
               markTicketAsUsed(ticketData[settings[api].barcodeProperty])
-            }>
+            }
+          >
             Mark as Used
           </button>
         </>
       )}
 
-      <div className='error'>
+      <div className="error">
         {error && (
           <p>Error: {error.message || "An unexpected error occurred."}</p>
         )}
