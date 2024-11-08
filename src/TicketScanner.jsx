@@ -17,17 +17,15 @@ export default function TicketScanner() {
     "https://ticket-guru-ticketguru-scrum-ritarit.2.rahtiapp.fi";
 
   /**
-   * Change the following properties and uncomment the correct username and password to test the correct API
+   * Change the following properties to test the correct API
    */
-  const URL = THEIR_API; // change to THEIR_API to test the API of Scrum Ritarit
+  const URL = OUR_API; // change to THEIR_API to test the API of Scrum Ritarit
   const TICKET_USED_ERROR_CODE = "ERR_BAD_REQUEST"; // Ours: "ERR_BAD_REQUEST", Theirs: nothing (yet?)
 
   const BARCODE_PROPERTY = URL === THEIR_API ? "ticketNumber" : "barcode"; // Ours: "barcode", Theirs: "ticketNumber"
 
-  const username = URL === THEIR_API ? "client" : "admin@test.com";
-  const password = URL === THEIR_API ? "client_salasana" : "admin";
-  //const username = "jane.doe@ticketguru.com"; // Jane needs access to events and ticket types before this works
-  //const password = "TicketInspector123";
+  const username = URL === THEIR_API ? "client" : "jane.doe@ticketguru.com";
+  const password = URL === THEIR_API ? "client_salasana" : "TicketInspector123";
   const authToken = btoa(`${username}:${password}`);
 
   // add basic auth header to all axios requests
