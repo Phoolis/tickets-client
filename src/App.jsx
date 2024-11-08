@@ -21,7 +21,7 @@ const settings = {
   },
   their: {
     url: "https://ticket-guru-ticketguru-scrum-ritarit.2.rahtiapp.fi",
-    ticketUsedErrorCode: "NOT_IMPLEMENTED",
+    ticketUsedErrorCode: "ERR_BAD_REQUEST", // Not really implemented yet
     barcodeProperty: "ticketNumber",
     username: "client",
     password: "client_salasana",

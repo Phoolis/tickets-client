@@ -114,7 +114,7 @@ export default function TicketScanner() {
     // Scrum Ritarit have not implemented an error for a used ticket yet, so the following is a workaround
     if (api == "their" && ticketData["usedTimestamp"]) {
       setError({ code: "ERR_CONFLICT" });
-      return;
+      //return;
     }
     const data = await useTicket(barcode);
     setTicketData(data);
