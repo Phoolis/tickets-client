@@ -131,63 +131,115 @@ export default function TicketScanner() {
   };
 
   return (
-    <div>
-      <h5>Choose API server:</h5>
-      <div className="testButtonsRow">
-        <button disabled={api == "local"} onClick={() => changeApi("local")}>
-          Local API
-        </button>
-        <button disabled={api == "our"} onClick={() => changeApi("our")}>
-          NAT20 API
-        </button>
-        <button disabled={api == "their"} onClick={() => changeApi("their")}>
-          Scrum Ritarit API
-        </button>
-      </div>
-      <EventDropDown
-        selectedEventId={selectedEventId}
-        setSelectedEventId={setSelectedEventId}
-        settings={settings}
-        api={api}
-      />
-      <CorrectEventChecker
-        selectedEventId={selectedEventId}
-        eventIdInTicket={eventIdInTicket}
-      />
-      <div className="barcodeReader">
-        Barcode:{" "}
-        <input
-          autoFocus
-          type="text"
-          value={barcode}
-          onChange={handleChange}
-          onKeyDown={handleKeyPress}
+    <div className="bg-white shadow sm:rounded-lg">
+      <div className="px-4 py-5 sm:p-6">
+        <div className="mt-2 max-w-xl text-sm text-gray-500">
+          <p>Select the server to fetch ticket data from.</p>
+        </div>
+
+        {/* API Selection Buttons */}
+        <div className="mt-5 sm:flex sm:items-center">
+          <div className="grid gap-3 sm:grid-cols-3 w-full sm:max-w-md">
+            <button
+              disabled={api === "local"}
+              onClick={() => changeApi("local")}
+              className={`w-full rounded-md px-3 py-2 text-sm font-semibold shadow-sm ${
+                api === "local"
+                  ? "bg-gray-300 text-gray-700 cursor-not-allowed"
+                  : "bg-indigo-600 text-white hover:bg-indigo-500"
+              }`}
+            >
+              Local API
+            </button>
+            <button
+              disabled={api === "our"}
+              onClick={() => changeApi("our")}
+              className={`w-full rounded-md px-3 py-2 text-sm font-semibold shadow-sm ${
+                api === "our"
+                  ? "bg-gray-300 text-gray-700 cursor-not-allowed"
+                  : "bg-indigo-600 text-white hover:bg-indigo-500"
+              }`}
+            >
+              NAT20 API
+            </button>
+            <button
+              disabled={api === "their"}
+              onClick={() => changeApi("their")}
+              className={`w-full rounded-md px-3 py-2 text-sm font-semibold shadow-sm ${
+                api === "their"
+                  ? "bg-gray-300 text-gray-700 cursor-not-allowed"
+                  : "bg-indigo-600 text-white hover:bg-indigo-500"
+              }`}
+            >
+              Scrum Ritarit API
+            </button>
+          </div>
+        </div>
+
+        {/* Event Dropdown */}
+        <div className="mt-5">
+          <EventDropDown
+            selectedEventId={selectedEventId}
+            setSelectedEventId={setSelectedEventId}
+            settings={settings}
+            api={api}
+          />
+        </div>
+
+        {/* Barcode Input */}
+        <div className="mt-5 sm:flex sm:items-center">
+          <label htmlFor="barcode" className="sr-only">
+            Barcode
+          </label>
+          <input
+            id="barcode"
+            type="text"
+            placeholder="Enter/Read ticket number here"
+            value={barcode}
+            onChange={handleChange}
+            onKeyDown={handleKeyPress}
+            autoFocus
+            className="block w-full pl-4 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:max-w-xs"
+          />
+        </div>
+
+        {/* Correct Event Checker */}
+        <CorrectEventChecker
+          selectedEventId={selectedEventId}
+          eventIdInTicket={eventIdInTicket}
         />
-      </div>
-      {ticketData && (
-        <>
-          <Ticket ticketData={ticketData} additionalData={additionalData} />
-          <button
-            onClick={() =>
-              markTicketAsUsed(ticketData[settings[api].barcodeProperty])
-            }
-          >
-            Mark as Used
-          </button>
-        </>
-      )}
 
-      <div className="error">
+        {/* Error Message */}
         {error && (
-          <p>Error: {error.message || "An unexpected error occurred."}</p>
+          <div className="mt-5 text-sm text-red-600">
+            <p>Error: {error.message || "An unexpected error occurred."}</p>
+            {error.code === settings[api].ticketUsedErrorCode && (
+              <p>Ticket already used!</p>
+            )}
+          </div>
         )}
-        {error && error.code === settings[api].ticketUsedErrorCode && (
-          <p>Ticket already used!</p>
-        )}
-      </div>
 
-      <div>
-        {example && <p> Try this: {example[settings[api].barcodeProperty]}</p>}
+        {/* Ticket Data Display */}
+        {ticketData && (
+          <div className="mt-5">
+            <Ticket ticketData={ticketData} additionalData={additionalData} />
+            <button
+              onClick={() =>
+                markTicketAsUsed(ticketData[settings[api].barcodeProperty])
+              }
+              className="mt-3 inline-flex w-full sm:w-auto items-center justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+            >
+              Mark as Used
+            </button>
+          </div>
+        )}
+
+        {/* Example Barcode */}
+        {example && (
+          <div className="mt-5 text-sm text-gray-500">
+            <p>Try this: {example[settings[api].barcodeProperty]}</p>
+          </div>
+        )}
       </div>
     </div>
   );
