@@ -1,57 +1,38 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
+import { useApiService } from "./service/api";
+import { useAppContext } from "./AppContext";
 
-import EventDropDown from "./eventDropDown";
+import EventDropDown from "./EventDropDown";
 
 export default function TicketScanner() {
+  const { settings } = useAppContext();
+  const [example, setExample] = useState(null);
+  const [error, setError] = useState(null);
+  const [barcode, setBarcode] = useState("");
+  const {
+    fetchExampleTicket,
+    fetchTicket,
+    fetchEvent,
+    fetchTicketType,
+    api,
+    setApi,
+    useTicket,
+  } = useApiService();
+  const [selectedEventId, setSelectedEventId] = useState(0);
   const [ticketData, setTicketData] = useState(null);
   const [additionalData, setAdditionalData] = useState({
     event: null,
     ticketType: null,
   });
-  const [example, setExample] = useState(null);
-  const [error, setError] = useState(null);
-  const [barcode, setBarcode] = useState("");
-  const [api, setApi] = useState("their");
-  const [selectedEventId, setSelectedEventId] = useState(0);
-
-  const settings = {
-    local: {
-      url: "http://localhost:8080",
-      ticketUsedErrorCode: "ERR_BAD_REQUEST",
-      barcodeProperty: "barcode",
-      username: "admin@test.com",
-      password: "admin",
-    },
-    our: {
-      url: "https://ticketguru.hellmanstudios.fi",
-      ticketUsedErrorCode: "ERR_BAD_REQUEST",
-      barcodeProperty: "barcode",
-      username: "jane.doe@ticketguru.com",
-      password: "TicketInspector123",
-    },
-    their: {
-      url: "https://ticket-guru-ticketguru-scrum-ritarit.2.rahtiapp.fi",
-      ticketUsedErrorCode: "NOT_IMPLEMENTED",
-      barcodeProperty: "ticketNumber",
-      username: "client",
-      password: "client_salasana",
-    },
-  };
 
   useEffect(() => {
     if (api) {
-      setAuthHeader();
-      fetchExampleTicket();
+      setApi(api);
+      fetchExampleTicket()
+        .then((data) => setExample(data))
+        .catch((error) => setError({ message: error.message }));
     }
   }, [api]);
-
-  const setAuthHeader = () => {
-    const authToken = btoa(
-      `${settings[api].username}:${settings[api].password}`
-    );
-    axios.defaults.headers.common["Authorization"] = `Basic ${authToken}`;
-  };
 
   const changeApi = async (newApi) => {
     try {
@@ -76,94 +57,74 @@ export default function TicketScanner() {
     }
   };
 
-  const fetchExampleTicket = async () => {
-    setError(null);
-    try {
-      const response = await axios.get(settings[api].url + "/api/tickets");
-      setExample(response.data[0]);
-    } catch (error) {
-      console.error("Error fetching example ticket data: ", error);
-      setError({ message: "Network error. Is the server up?" });
-    }
-  };
-
   const fetchTicketData = async (barcode) => {
-    setError(null);
     try {
-      const fetchUrl =
-        settings[api].url +
-        (api == "their" ? "/api/tickets/" : "/api/tickets/barcode/") +
-        barcode;
-      const response = await axios.get(fetchUrl);
+      const response = await fetchTicket(barcode);
+
+      // If response is an object, directly set ticketData
       setTicketData(response.data);
-      const fetchMoreFn = api == "their" ? fetchMoreTheirs : fetchMoreOurs;
-      fetchMoreFn(response.data);
-      setBarcode("");
+
+      const fetchMoreFn = api === "their" ? fetchMoreTheirs : fetchMoreOurs;
+
+      // Call fetchMore function conditionally
+      if (fetchMoreFn) {
+        await fetchMoreFn(response.data); // Assuming response contains the needed fields
+      }
     } catch (error) {
-      console.error("Error fetching ticket data: ", error);
+      console.error("Error in fetchTicketData:", error);
+      setError({ message: error.message });
     }
   };
 
-  const fetchMoreOurs = (ticketData) => {
+  const fetchMoreOurs = async (ticket) => {
     setAdditionalData({
       event: {
-        name: ticketData.event.name,
-        time: ticketData.event.beingsAt,
-        location: ticketData.venue.name,
+        name: ticket.event.name,
+        time: ticket.event.beingsAt,
+        location: ticket.venue.name,
       },
-      ticketType: ticketData.ticketType.name,
+      ticketType: ticket.ticketType.name,
     });
   };
 
-  const fetchMoreTheirs = async (ticketData) => {
-    if (!ticketData["eventId"]) {
-      throw new Error("Missing eventId in ticket data");
-    }
+  const fetchMoreTheirs = async (ticket) => {
     try {
-      const eventResponse = await axios.get(
-        settings[api].url + "/api/events/" + ticketData["eventId"]
-      );
-      const ticketTypeResponse = await axios.get(
-        settings[api].url + "/api/ticket-types/" + ticketData["ticketTypeId"]
-      );
+      if (!ticket || !ticket.eventId) {
+        throw new Error("Missing eventId in ticket data");
+      }
+
+      const eventResponse = await fetchEvent(ticket.eventId);
+      const ticketTypeResponse = await fetchTicketType(ticket.ticketTypeId);
+
       setAdditionalData({
         event: {
-          name: eventResponse.data.eventName,
-          time: eventResponse.data.eventDate,
-          location: eventResponse.data.location,
+          name: eventResponse.eventName,
+          time: eventResponse.eventDate,
+          location: eventResponse.location,
         },
-        ticketType: ticketTypeResponse.data.ticketTypeName,
+        ticketType: ticketTypeResponse.ticketTypeName,
       });
     } catch (error) {
-      console.error("Error fetching additional data: ", error);
+      console.error("Error in fetchMoreTheirs:", error);
+      setError({ message: error.message });
     }
   };
 
   const markTicketAsUsed = async (barcode) => {
     // Scrum Ritarit have not implemented an error for a used ticket yet, so the following is a workaround
     if (api == "their" && ticketData["usedTimestamp"]) {
-      setError({ code: settings[api].ticketUsedErrorCode });
+      setError({ code: "ERR_CONFLICT" });
       return;
     }
-
-    try {
-      const useUrl =
-        settings[api].url +
-        "/api/tickets/" +
-        (api == "their" ? barcode + "/use?used=true" : "use/" + barcode);
-      const response = await axios.put(useUrl);
-      setTicketData(response.data);
-      setBarcode("");
-    } catch (error) {
-      console.error("Error marking ticket as used: ", error);
-      setError(error);
-    }
+    const data = await useTicket(barcode);
+    setTicketData(data);
+    setBarcode("");
   };
 
   return (
     <div>
       <h5>Choose API server:</h5>
-      <div className='testButtonsRow'>
+      <div className="testButtonsRow">
         <button disabled={api == "local"} onClick={() => changeApi("local")}>
           Local API
         </button>
@@ -177,12 +138,14 @@ export default function TicketScanner() {
       <EventDropDown
         selectedEventId={selectedEventId}
         setSelectedEventId={setSelectedEventId}
+        settings={settings}
+        api={api}
       />
-      <div className='barcodeReader'>
+      <div className="barcodeReader">
         Barcode:{" "}
         <input
           autoFocus
-          type='text'
+          type="text"
           value={barcode}
           onChange={handleChange}
           onKeyDown={handleKeyPress}
@@ -199,13 +162,14 @@ export default function TicketScanner() {
           <button
             onClick={() =>
               markTicketAsUsed(ticketData[settings[api].barcodeProperty])
-            }>
+            }
+          >
             Mark as Used
           </button>
         </>
       )}
 
-      <div className='error'>
+      <div className="error">
         {error && (
           <p>Error: {error.message || "An unexpected error occurred."}</p>
         )}
