@@ -18,7 +18,7 @@ export default function TicketScanner() {
     fetchTicketType,
     api,
     setApi,
-    useTicket,
+    consumeTicket,
   } = useApiService();
   const [selectedEventId, setSelectedEventId] = useState(0);
   const [eventIdInTicket, setEventIdInTicket] = useState(0);
@@ -40,6 +40,7 @@ export default function TicketScanner() {
   useEffect(() => {
     if (ticketData != null) {
       setEventIdInTicket(ticketData.eventId);
+      setError(null);
     }
   }, [ticketData]);
 
@@ -125,7 +126,7 @@ export default function TicketScanner() {
       setError({ code: "ERR_CONFLICT" });
       //return;
     }
-    const data = await useTicket(barcode);
+    const data = await consumeTicket(barcode);
     setTicketData(data);
     setBarcode("");
   };
@@ -237,7 +238,18 @@ export default function TicketScanner() {
         {/* Example Barcode */}
         {example && (
           <div className="mt-5 text-sm text-gray-500">
-            <p>Try this: {example[settings[api].barcodeProperty]}</p>
+            <p>
+              Try this:{" "}
+              <input
+                onClick={() => {
+                  setBarcode(example[settings[api].barcodeProperty]);
+                  fetchTicketData(example[settings[api].barcodeProperty]);
+                }}
+                type="button"
+                style={{ cursor: "pointer" }}
+                value={example[settings[api].barcodeProperty]}
+              />
+            </p>
           </div>
         )}
       </div>

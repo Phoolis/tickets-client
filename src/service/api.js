@@ -85,7 +85,7 @@ export const useApiService = () => {
     }
   };
 
-  const useTicket = async (barcode) => {
+  const consumeTicket = async (barcode) => {
     try {
       const useUrl =
         settings[api].url +
@@ -106,7 +106,7 @@ export const useApiService = () => {
     fetchTicket,
     fetchEvent,
     fetchTicketType,
-    useTicket,
+    consumeTicket,
     fetchEvents,
   };
 };
