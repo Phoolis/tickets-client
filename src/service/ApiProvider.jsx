@@ -8,7 +8,7 @@ const ApiContext = createContext();
 // Define the ApiProvider component
 export const ApiProvider = ({ children }) => {
   const { settings } = useAppContext();
-  const [api, setApi] = useState("local");
+  const [api, setApi] = useState("their"); // DEFAULT API: "their", change to "local" or "our" for testing
 
   // Set authorization header whenever the API changes
   const setAuthHeader = () => {
