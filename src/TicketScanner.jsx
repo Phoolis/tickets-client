@@ -110,6 +110,8 @@ export default function TicketScanner() {
     setBarcode("");
   };
 
+  const isCorrectEvent = selectedEventId == eventIdInTicket;
+
   return (
     <div className="bg-white shadow sm:rounded-lg">
       <div className="px-4 py-5 sm:p-6">
@@ -131,13 +133,14 @@ export default function TicketScanner() {
         <CorrectEventChecker
           selectedEventId={selectedEventId}
           eventIdInTicket={eventIdInTicket}
+          isCorrectEvent={isCorrectEvent}
         />
         <ErrorMessage
           error={error}
           errorCode={settings[api].ticketUsedErrorCode}
         />
 
-        {ticketData && (
+        {ticketData && isCorrectEvent && (
           <div className="mt-5">
             <Ticket ticketData={ticketData} additionalData={additionalData} />
             <button
