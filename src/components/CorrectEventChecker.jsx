@@ -8,8 +8,8 @@ export default function CorrectEventChecker({
   eventIdInTicket,
   isCorrectEvent,
 }) {
-  if (!selectedEventId && !eventIdInTicket) {
-    return <div></div>; // No output if IDs are missing
+  if (selectedEventId == 0 && eventIdInTicket == 0) {
+    return <div></div>; // No output if IDs are not set (ie. have the initial value 0)
   }
 
   return (
@@ -22,7 +22,14 @@ export default function CorrectEventChecker({
           <CheckCircleIcon className='h-5 w-5 text-green-500 mr-2' />
           <p className='text-sm font-medium'>Correct event</p>
         </>
-      ) : selectedEventId != 0 ? (
+      ) : eventIdInTicket == 0 ? (
+        <>
+        <ExclamationCircleIcon className='h-5 w-5 text-red-500 mr-2' />
+        <p className='text-sm font-medium'>
+          Please give a ticket number.
+        </p>
+      </>
+      ) :  selectedEventId != 0 ? (
         <>
           <ExclamationCircleIcon className='h-5 w-5 text-red-500 mr-2' />
           <p className='text-sm font-medium'>
