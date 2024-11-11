@@ -42,7 +42,11 @@ export default function TicketScanner() {
 
   useEffect(() => {
     if (ticketData != null) {
-      setEventIdInTicket(ticketData.eventId);
+      if (ticketData.eventId) {
+        setEventIdInTicket(ticketData.eventId);
+      } else {
+        setEventIdInTicket(ticketData.event.id);
+      }
       clearErrorMessage(); // Clear any error once data is fetched
     }
   }, [ticketData]);
@@ -120,12 +124,11 @@ export default function TicketScanner() {
   const isCorrectEvent = selectedEventId == eventIdInTicket;
 
   return (
-    <div className='bg-white shadow sm:rounded-lg'>
-      <div className='px-4 py-5 sm:p-6'>
-        <p className='text-sm text-gray-500'>
+    <div className="bg-white shadow sm:rounded-lg">
+      <div className="px-4 py-5 sm:p-6">
+        <p className="text-sm text-gray-500">
           Select the server to fetch ticket data from.
         </p>
-
         <ApiSelectionButtons changeApi={changeApi} />
         <EventDropDown
           selectedEventId={selectedEventId}
@@ -136,7 +139,6 @@ export default function TicketScanner() {
           handleChange={handleChange}
           handleKeyPress={handleKeyPress}
         />
-
         <CorrectEventChecker
           selectedEventId={selectedEventId}
           eventIdInTicket={eventIdInTicket}
@@ -146,29 +148,28 @@ export default function TicketScanner() {
           error={errorMessage}
           errorCode={settings[api].ticketUsedErrorCode}
         />
-
         {ticketData && isCorrectEvent && !ticketData.used && (
-          <div className='mt-5'>
+          <div className="mt-5">
             <Ticket ticketData={ticketData} additionalData={additionalData} />
             <button
               onClick={markTicketAsUsed}
-              className='mt-3 inline-flex w-full sm:w-auto items-center justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500'>
+              className="mt-3 inline-flex w-full sm:w-auto items-center justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500"
+            >
               Mark as Used
             </button>
           </div>
         )}
-
         {ticketData && isCorrectEvent && ticketData.used && (
-          <div className='mt-5'>
+          <div className="mt-5">
             <Ticket ticketData={ticketData} additionalData={additionalData} />
             <button
               onClick={markTicketAsUnused}
-              className='mt-3 inline-flex w-full sm:w-auto items-center justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500'>
+              className="mt-3 inline-flex w-full sm:w-auto items-center justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500"
+            >
               Mark as Unused
             </button>
           </div>
         )}
-
         <ExampleBarcode
           example={example}
           barcodeProperty={settings[api].barcodeProperty}
