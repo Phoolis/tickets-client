@@ -95,12 +95,24 @@ export const ApiProvider = ({ children }) => {
   const consumeTicket = async (barcode) => {
     try {
       const useUrl = `${settings[api].url}/api/tickets/${
-        api === "their" ? `${barcode}/use?used=true` : `use/${barcode}`
+        api === "their" ? `${barcode}/use?used` : `use/${barcode}`
       }`;
       const response = await axios.put(useUrl);
       return response.data;
     } catch (error) {
       console.error("Error consuming ticket data:", error);
+    }
+  };
+
+  const releaseTicket = async (barcode) => {
+    try {
+      const useUrl = `${settings[api].url}/api/tickets/${
+        api === "their" ? `${barcode}/use?used=false` : `use/${barcode}`
+      }`;
+      const response = await axios.put(useUrl);
+      return response.data;
+    } catch (error) {
+      console.error("Error releasing ticket data:", error);
     }
   };
 
@@ -115,8 +127,8 @@ export const ApiProvider = ({ children }) => {
         fetchEvents,
         fetchTicketType,
         consumeTicket,
-      }}
-    >
+        releaseTicket,
+      }}>
       {children}
     </ApiContext.Provider>
   );
