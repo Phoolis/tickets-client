@@ -8,7 +8,8 @@ const ApiContext = createContext();
 // Define the ApiProvider component
 export const ApiProvider = ({ children }) => {
   const { settings } = useAppContext();
-  const [api, setApi] = useState("their"); // DEFAULT API: "their", change to "local" or "our" for testing
+  const [api, setApi] = useState("our"); // DEFAULT API: "their", change to "local" or "our" for testing
+  const [errorMessage, setErrorMessage] = useState("");
 
   // Set authorization header whenever the API changes
   const setAuthHeader = () => {
@@ -23,6 +24,22 @@ export const ApiProvider = ({ children }) => {
     setAuthHeader();
   }, [api]);
 
+  // Error handling function
+  const handleApiError = (error) => {
+    if (error.response) {
+      setErrorMessage(error.response.data.message);
+    } else if (error.request) {
+      setErrorMessage("No response received from the server.");
+    } else {
+      setErrorMessage("An unexpected error occurred. Is the server up?");
+    }
+  };
+
+  // Function to clear the error message
+  const clearErrorMessage = () => {
+    setErrorMessage("");
+  };
+
   // API service functions
   const fetchExampleTicket = async () => {
     try {
@@ -31,7 +48,7 @@ export const ApiProvider = ({ children }) => {
       return response.data[0];
     } catch (error) {
       console.error("Error fetching example ticket data:", error);
-      throw new Error("Network error. Is the server up?");
+      handleApiError(error);
     }
   };
 
@@ -45,7 +62,7 @@ export const ApiProvider = ({ children }) => {
       return response;
     } catch (error) {
       console.error("Error fetching ticket data:", error);
-      throw new Error("Network error. Is the server up?");
+      handleApiError(error);
     }
   };
 
@@ -58,7 +75,7 @@ export const ApiProvider = ({ children }) => {
       return response.data;
     } catch (error) {
       console.error("Error fetching events:", error);
-      throw new Error("Network error. Is the server up?");
+      handleApiError(error);
     }
   };
 
@@ -75,7 +92,7 @@ export const ApiProvider = ({ children }) => {
       );
     } catch (error) {
       console.error("Error fetching events:", error);
-      throw new Error("Network error. Is the server up?");
+      handleApiError(error);
     }
   };
 
@@ -88,7 +105,7 @@ export const ApiProvider = ({ children }) => {
       return response.data;
     } catch (error) {
       console.error("Error fetching ticket types:", error);
-      throw new Error("Network error. Is the server up?");
+      handleApiError(error);
     }
   };
 
@@ -101,6 +118,7 @@ export const ApiProvider = ({ children }) => {
       return response.data;
     } catch (error) {
       console.error("Error consuming ticket data:", error);
+      handleApiError(error);
     }
   };
 
@@ -109,6 +127,8 @@ export const ApiProvider = ({ children }) => {
       value={{
         api,
         setApi,
+        errorMessage,
+        clearErrorMessage,
         fetchExampleTicket,
         fetchTicket,
         fetchEvent,

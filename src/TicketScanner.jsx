@@ -12,7 +12,6 @@ import ExampleBarcode from "./components/ExampleBarcode";
 export default function TicketScanner() {
   const { settings } = useAppContext();
   const [example, setExample] = useState(null);
-  const [error, setError] = useState(null);
   const [barcode, setBarcode] = useState("");
   const {
     fetchExampleTicket,
@@ -22,6 +21,8 @@ export default function TicketScanner() {
     api,
     setApi,
     consumeTicket,
+    errorMessage,
+    clearErrorMessage,
   } = useApiService();
   const [selectedEventId, setSelectedEventId] = useState(0);
   const [eventIdInTicket, setEventIdInTicket] = useState(0);
@@ -34,22 +35,21 @@ export default function TicketScanner() {
   useEffect(() => {
     if (api) {
       setApi(api);
-      fetchExampleTicket()
-        .then((data) => setExample(data))
-        .catch((error) => setError({ message: error.message }));
+      fetchExampleTicket().then((data) => setExample(data));
     }
   }, [api]);
 
   useEffect(() => {
     if (ticketData != null) {
       setEventIdInTicket(ticketData.eventId);
-      setError(null);
+      clearErrorMessage(); // Clear any error once data is fetched
     }
   }, [ticketData]);
 
   const changeApi = (newApi) => {
     setBarcode("");
     setTicketData(null);
+    clearErrorMessage();
     setApi(newApi);
   };
 
@@ -71,7 +71,7 @@ export default function TicketScanner() {
       const fetchMoreFn = api === "their" ? fetchMoreTheirs : fetchMoreOurs;
       if (fetchMoreFn) await fetchMoreFn(response.data);
     } catch (error) {
-      setError({ message: error.message });
+      console.error("Error fetching ticket data:", error);
     }
   };
 
@@ -100,7 +100,7 @@ export default function TicketScanner() {
         ticketType: ticketTypeResponse.ticketTypeName,
       });
     } catch (error) {
-      setError({ message: error.message });
+      console.error("Error fetching additional data:", error);
     }
   };
 
@@ -136,7 +136,7 @@ export default function TicketScanner() {
           isCorrectEvent={isCorrectEvent}
         />
         <ErrorMessage
-          error={error}
+          error={errorMessage}
           errorCode={settings[api].ticketUsedErrorCode}
         />
 
