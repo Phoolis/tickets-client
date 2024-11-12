@@ -111,13 +111,13 @@ export default function TicketScanner() {
 
   const markTicketAsUsed = async () => {
     const data = await consumeTicket(barcode);
-    setTicketData(data);
+    setTicketData(null);
     setBarcode("");
   };
 
   const markTicketAsUnused = async () => {
     const data = await releaseTicket(barcode);
-    setTicketData(data);
+    setTicketData(null);
     setBarcode("");
   };
 
